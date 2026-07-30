@@ -1,0 +1,44 @@
+# Bare-Metal USART2 Driver & Interactive Command Shell
+**Target Hardware:** ST Nucleo-F411RE (ARM Cortex-M4 @ 16 MHz HSI)  
+**Development Paradigm:** Pure Bare-Metal C (Direct Register Access). No HAL, LL, or CubeMX auto-generation.
+
+---
+
+## Technical Overview
+This project implements a monolithic, polling-driven USART2 peripheral driver and an interactive command-line interface (CLI) shell for the STM32F411CE/RE MCU. All operations are written from scratch utilizing raw memory-mapped register manipulation as specified by the **RM0383 Reference Manual**.
+
+### System Architecture & Configuration
+* **Clock Tree:** System runs on the internal 16 MHz High-Speed Internal (HSI) oscillator. APB1 and AHB1 bus prescalers are left at default values ($HCLK = PCLK1 = 16\text{ MHz}$).
+* **Gating:** Explicit peripheral clock enablement via `RCC_AHB1ENR` (Bit 0 for GPIOA) and `RCC_APB1ENR` (Bit 17 for USART2).
+* **Pin Multiplexing:** `PA2` (TX) and `PA3` (RX) are routed to Alternate Function 7 (`AF07`) via `GPIOA_AFRL` fields to interface with the embedded ST-LINK Virtual COM Port.
+* **Baud Rate Generation:** Configured for **115200 8N1**. The Baud Rate Register (`USART2_BRR`) is loaded with `0x8B` (Fractional baud rate calculation: $\frac{16,000,000}{16 \times 115200} = 8.6805$; Mantissa = `0x8`, Fraction = $0.6805 \times 16 \approx 11 \rightarrow$ `0xB`).
+
+---
+
+## Hardware Architecture
+* **Development Board:** ST Nucleo-F411RE
+* **Interfacing:** Integrated ST-LINK V2-1 Virtual COM Port over USB.
+* **Debug Pins:** `PA2` (USART2_TX), `PA3` (USART2_RX), and `PA5` (User LED1).
+* **Instrumentation:** 24 MHz 8-channel logic analyzer hooked into TX/RX test points for hardware-level protocol decoding.
+
+---
+
+## Firmware Features & Shell Capabilities
+* **Zero-Abstraction GPIO Driver:** Explicit masking and bitwise operations on `GPIOA_MODER` and `GPIOA_ODR` to toggle the user LED without runtime abstraction penalties.
+* **Polled Transmit/Receive State Machine:** Code blocks deterministically on the `TXE` (Transmit Data Register Empty) and `RXNE` (Receive Data Register Not Empty) status flags in `USART2_SR`.
+* **Interactive CLI Shell:** Supports line-buffered processing with dynamic memory tracking up to a 32-byte threshold.
+  * **Command Parser:** Evaluates string literals via strict boundary checks supporting: `led on`, `led off`, and `status`.
+  * **UX Utilities:** Full destructive backspace support (`0x7F` / `\b`) handling physical terminal cursor repositioning and active local echo.
+
+---
+
+## Verification & Protocol Analysis
+The UART transmission timing accuracy and signaling integrity were verified out-of-system via a logic analyzer capture decoded natively inside PulseView.
+
+*(Insert Milestone 5 PulseView capture screenshot here)*
+
+---
+
+## Key Engineering Takeaways
+Developing this driver provided deep practical insight into the exact synchronization required between peripheral clocks and core logic; missing an explicit RCC enable bit results in a hard fault or silent bus freeze. Working at the register level demystified the internal hardware arbitration of the `TXE`/`RXNE` shift registers and how they translate C strings into physical, timed high/low voltage transitions on a wire. Additionally, implementing local echo and backspace sequences highlighted the distinct difference between raw character reception and line-buffered terminal terminal emulation state machines.
+
