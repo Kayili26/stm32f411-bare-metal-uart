@@ -38,17 +38,70 @@ static void uart2_puts(const char *s)
 {
 while (*s) uart2_putc(*s++);
 }
-int main(void)
-{
 
-/* LED setup from step 1 which will be used in a shell */
-RCC_AHB1ENR |= (1u << 0);
-GPIOA_MODER &= ~(3u << 10);
-GPIOA_MODER |= (1u << 10);
-uart2_init();
-while (1)
+static char uart2_getc(void)
 {
-uart2_puts("Hello Arda\r\n");
-for (volatile uint32_t i = 0; i < 2000000; i++);
-}
+while (!(USART2_SR & SR_RXNE)) { }
+return (char)USART2_DR;
+} /*This is the receiving byte code which is needed to write a tiny command shell */
+
+static int streq(const char *a, const char *b)
+{
+while (*a && (*a == *b)) { a++; b++; }
+return *a == *b;
+} /* This is a minimal string comparer */
+
+int main(void) {
+
+	RCC_AHB1ENR |= (1u << 0);
+	GPIOA_MODER &= ~(3u << 10);
+	GPIOA_MODER |= (1u << 10);
+	uart2_init();
+	uart2_puts("\r\nF411 shell ready. Commands: led on | led off | status\r\n> ");
+
+	char buf[32];
+	uint32_t len = 0;
+
+	while (1)
+	{
+		char c = uart2_getc();
+
+		if (c == '\r' || c == '\n') /* if enter is pressed */
+		{
+			buf[len] = '\0';
+			uart2_puts("r\n");
+
+			if (streq(buf, "led on"))
+			{
+				GPIOA_ODR |= (1u << 5);
+				uart2_puts("LED is ON\r\n");
+			}
+			else if (streq(buf, "led off"))
+			{
+			GPIOA_ODR &= ~(1u << 5);
+			uart2_puts("LED is OFF\r\n");
+			}
+			else if (streq(buf, "status"))
+			{
+			uart2_puts((GPIOA_ODR & (1u << 5)) ? "LED: ON\r\n"
+			: "LED: OFF\r\n");
+			}
+			else if (len > 0)
+			{
+			uart2_puts("unknown command\r\n");
+			}
+			len = 0;
+			uart2_puts("> ");
+		}
+
+		else if (c == 0x7F || c == '\b') /* when pressing backspace */
+		{
+		if (len > 0) { len--; uart2_puts("\b \b"); }
+		}
+		else if (len < sizeof(buf) - 1)
+		{
+		buf[len++] = c;
+		uart2_putc(c); /* echo so you see typing */
+		}
+	}
 }

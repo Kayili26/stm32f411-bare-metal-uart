@@ -1,4 +1,6 @@
 ../Src/main.c:18:13:uart2_init	4	static
 ../Src/main.c:32:13:uart2_putc	16	static
 ../Src/main.c:37:13:uart2_puts	16	static
-../Src/main.c:41:5:main	16	static
+../Src/main.c:42:13:uart2_getc	4	static
+../Src/main.c:48:12:streq	16	static
+../Src/main.c:54:5:main	48	static
