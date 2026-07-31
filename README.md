@@ -32,12 +32,16 @@ This project implements a monolithic, polling-driven USART2 peripheral driver an
 
 ---
 
-## Verification & Protocol Analysis
-The UART transmission timing accuracy and signaling integrity were verified out-of-system via a logic analyzer capture decoded natively inside PulseView.
+## Verification
+Functional verification via serial terminal:
+- Full printable ASCII range (0x20–0x7E) transmitted and received without corruption
+- Baud sensitivity confirmed: correct output at 115200, garbage at 9600,
+  validating the computed BRR value (0x8B from 16 MHz APB1 clock)
+- Bidirectional: shell commands parsed correctly, responses match LED state
+- Sustained transmission over several minutes with no dropped bytes
 
-*(Insert Milestone 5 PulseView capture screenshot here)*
-
----
+Planned: signal-level capture of the TX line with a logic analyzer
+(start/stop bit timing, UART frame decode at 115200 baud).
 
 ## Key Engineering Takeaways
 Developing this driver provided deep practical insight into the exact synchronization required between peripheral clocks and core logic; missing an explicit RCC enable bit results in a hard fault or silent bus freeze. Working at the register level demystified the internal hardware arbitration of the `TXE`/`RXNE` shift registers and how they translate C strings into physical, timed high/low voltage transitions on a wire. Additionally, implementing local echo and backspace sequences highlighted the distinct difference between raw character reception and line-buffered terminal terminal emulation state machines.
