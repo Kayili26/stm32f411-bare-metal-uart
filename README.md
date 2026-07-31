@@ -5,13 +5,13 @@
 ---
 
 ## Technical Overview
-This project implements a monolithic, polling-driven USART2 peripheral driver and an interactive command-line interface (CLI) shell for the STM32F411CE/RE MCU. All operations are written from scratch utilizing raw memory-mapped register manipulation as specified by the **RM0383 Reference Manual**.
+This project implements a monolithic, polling-driven USART2 peripheral driver and an interactive command-line interface (CLI) shell for the STM32F411CE/RE MCU. All operations are written from scrat[...]
 
 ### System Architecture & Configuration
 * **Clock Tree:** System runs on the internal 16 MHz High-Speed Internal (HSI) oscillator. APB1 and AHB1 bus prescalers are left at default values ($HCLK = PCLK1 = 16\text{ MHz}$).
 * **Gating:** Explicit peripheral clock enablement via `RCC_AHB1ENR` (Bit 0 for GPIOA) and `RCC_APB1ENR` (Bit 17 for USART2).
 * **Pin Multiplexing:** `PA2` (TX) and `PA3` (RX) are routed to Alternate Function 7 (`AF07`) via `GPIOA_AFRL` fields to interface with the embedded ST-LINK Virtual COM Port.
-* **Baud Rate Generation:** Configured for **115200 8N1**. The Baud Rate Register (`USART2_BRR`) is loaded with `0x8B` (Fractional baud rate calculation: $\frac{16,000,000}{16 \times 115200} = 8.6805$; Mantissa = `0x8`, Fraction = $0.6805 \times 16 \approx 11 \rightarrow$ `0xB`).
+* **Baud Rate Generation:** Configured for **115200 8N1**. The Baud Rate Register (`USART2_BRR`) is loaded with `0x8B` (Fractional baud rate calculation: $\frac{16,000,000}{16 \times 115200} = 8.6[...]
 
 ---
 
@@ -44,5 +44,13 @@ Planned: signal-level capture of the TX line with a logic analyzer
 (start/stop bit timing, UART frame decode at 115200 baud).
 
 ## Key Engineering Takeaways
-Developing this driver provided deep practical insight into the exact synchronization required between peripheral clocks and core logic; missing an explicit RCC enable bit results in a hard fault or silent bus freeze. Working at the register level demystified the internal hardware arbitration of the `TXE`/`RXNE` shift registers and how they translate C strings into physical, timed high/low voltage transitions on a wire. Additionally, implementing local echo and backspace sequences highlighted the distinct difference between raw character reception and line-buffered terminal terminal emulation state machines.
+Developing this driver provided deep practical insight into the exact synchronization required between peripheral clocks and core logic; missing an explicit RCC enable bit results in a hard fault [...]
 
+---
+
+## Screenshot
+![PuTTY terminal showing the UART command shell](Screenshot%202026-07-30%20172729.png)
+
+Caption: PuTTY connected to the Nucleo‑F411RE running the interactive UART shell (115200 8N1). Try commands: `status`, `led on`, `led off`.
+
+Alt-text: PuTTY serial terminal window connected to an ST Nucleo‑F411RE running the bare‑metal USART2 command shell at 115200 8N1. The terminal shows line‑buffered input with local echo and the MCU's responses to commands such as 'status', 'led on', and 'led off', confirming LED state changes.
