@@ -1,11 +1,14 @@
 # Bare-Metal USART2 Driver & Interactive Command Shell
+
+![Main: Nucleo-F411RE running the UART shell](stm32f411-bare-metal-uart.jpeg)
+
 **Target Hardware:** ST Nucleo-F411RE (ARM Cortex-M4 @ 16 MHz HSI)  
 **Development Paradigm:** Pure Bare-Metal C (Direct Register Access). No HAL, LL, or CubeMX auto-generation.
 
 ---
 
 ## Technical Overview
-This project implements a monolithic, polling-driven USART2 peripheral driver and an interactive command-line interface (CLI) shell for the STM32F411CE/RE MCU. All operations are written from scrat[...]
+This project implements a monolithic, polling-driven USART2 peripheral driver and an interactive command-line interface (CLI) shell for the STM32F411CE/RE MCU. All operations are written from scrat[...] 
 
 ### System Architecture & Configuration
 * **Clock Tree:** System runs on the internal 16 MHz High-Speed Internal (HSI) oscillator. APB1 and AHB1 bus prescalers are left at default values ($HCLK = PCLK1 = 16\text{ MHz}$).
@@ -48,9 +51,12 @@ Developing this driver provided deep practical insight into the exact synchroniz
 
 ---
 
-## Screenshot
-![PuTTY terminal showing the UART command shell](Screenshot%202026-07-30%20172729.png)
+## Screenshots
+
+Main: ![Nucleo-F411RE running the UART shell (main picture)](stm32f411-bare-metal-uart.jpeg)
+
+Alternate: ![PuTTY terminal showing the UART command shell](Screenshot%202026-07-30%20172729.png)
 
 Caption: PuTTY connected to the Nucleo‑F411RE running the interactive UART shell (115200 8N1). Try commands: `status`, `led on`, `led off`.
 
-Alt-text: PuTTY serial terminal window connected to an ST Nucleo‑F411RE running the bare‑metal USART2 command shell at 115200 8N1. The terminal shows line‑buffered input with local echo and the MCU's responses to commands such as 'status', 'led on', and 'led off', confirming LED state changes.
+Alt-text: PuTTY serial terminal window connected to an ST Nucleo‑F411RE running the bare‑metal USART2 command shell at 115200 8N1. The terminal shows line‑buffered input with local echo and [...]
