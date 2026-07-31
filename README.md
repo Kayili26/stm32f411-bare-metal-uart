@@ -1,7 +1,5 @@
 # Bare-Metal USART2 Driver & Interactive Command Shell
 
-![Main: Nucleo-F411RE running the UART shell](stm32f411-bare-metal-uart.jpeg)
-
 **Target Hardware:** ST Nucleo-F411RE (ARM Cortex-M4 @ 16 MHz HSI)  
 **Development Paradigm:** Pure Bare-Metal C (Direct Register Access). No HAL, LL, or CubeMX auto-generation.
 
